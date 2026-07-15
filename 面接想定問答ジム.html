@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>面接ジム — 想定問答トレーナー</title>
+<style>
+  :root {
+    --red: #ff4d2e;
+    --red-dark: #d63a1f;
+    --blue: #2e7bff;
+    --blue-dark: #1f5fd6;
+    --bg: #17141f;
+    --bg2: #221d2e;
+    --card: #2b2540;
+    --text: #f4f1ea;
+    --muted: #a89fc0;
+    --gold: #ffcf4d;
+    --green: #4dd47a;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Yu Gothic", sans-serif;
+    background: var(--bg);
+    background-image: radial-gradient(circle at 20% 10%, #2a2340 0%, transparent 50%),
+                      radial-gradient(circle at 80% 90%, #1e2a45 0%, transparent 50%);
+    color: var(--text);
+    min-height: 100vh;
+  }
+  .screen { display: none; max-width: 900px; margin: 0 auto; padding: 32px 20px 80px; }
+  .screen.active { display: block; }
+
+  /* ── トップ画面 ── */
+  #screen-top { text-align: center; padding-top: 8vh; }
+  .top-title {
+    font-size: 2.4rem; font-weight: 900; letter-spacing: .06em;
+    text-shadow: 0 4px 0 rgba(0,0,0,.4);
+  }
+  .top-title .accent { color: var(--gold); }
+  .top-sub { color: var(--muted); margin-top: 10px; font-size: .95rem; }
+  .panels { display: flex; gap: 28px; justify-content: center; margin-top: 48px; flex-wrap: wrap; }
+  .panel {
+    width: 340px; min-height: 300px; border-radius: 24px; cursor: pointer;
+    border: 5px solid rgba(255,255,255,.85);
+    padding: 34px 26px; text-align: center; position: relative;
+    transition: transform .18s cubic-bezier(.34,1.56,.64,1), box-shadow .18s;
+    box-shadow: 0 10px 0 rgba(0,0,0,.35);
+    display: flex; flex-direction: column; justify-content: center; gap: 12px;
+  }
+  .panel:hover, .panel:focus-visible { transform: translateY(-8px) scale(1.04) rotate(-.5deg); }
+  .panel:active { transform: translateY(2px) scale(.99); box-shadow: 0 3px 0 rgba(0,0,0,.35); }
+  .panel-shukatsu { background: linear-gradient(160deg, var(--red), var(--red-dark)); box-shadow: 0 10px 0 #8f2513; }
+  .panel-grad     { background: linear-gradient(160deg, var(--blue), var(--blue-dark)); box-shadow: 0 10px 0 #143e8f; }
+  .panel .p-icon { font-size: 3rem; }
+  .panel h2 { font-size: 1.7rem; font-weight: 900; letter-spacing: .1em; text-shadow: 0 3px 0 rgba(0,0,0,.3); }
+  .panel .p-copy { font-weight: 700; font-size: .98rem; }
+  .panel .p-note {
+    font-size: .78rem; opacity: 0; max-height: 0; overflow: hidden;
+    transition: opacity .25s, max-height .25s; line-height: 1.5;
+    background: rgba(0,0,0,.25); border-radius: 10px; padding: 0 10px;
+  }
+  .panel:hover .p-note, .panel:focus-visible .p-note { opacity: 1; max-height: 120px; padding: 8px 10px; }
+  .concept-note { margin-top: 44px; color: var(--muted); font-size: .85rem; line-height: 1.8; }
+
+  /* ── フォーム ── */
+  .form-head { display: flex; align-items: center; gap: 14px; margin-bottom: 24px; }
+  .mode-chip { padding: 6px 14px; border-radius: 999px; font-weight: 800; font-size: .9rem; color: #fff; }
+  .mode-chip.shukatsu { background: var(--red); }
+  .mode-chip.grad { background: var(--blue); }
+  h1.form-title { font-size: 1.5rem; font-weight: 900; }
+  .back-btn {
+    margin-left: auto; background: none; border: 2px solid var(--muted); color: var(--muted);
+    border-radius: 10px; padding: 6px 14px; cursor: pointer; font-size: .85rem;
+  }
+  .back-btn:hover { border-color: var(--text); color: var(--text); }
+  fieldset { border: none; background: var(--card); border-radius: 16px; padding: 22px; margin-bottom: 18px; }
+  legend { font-weight: 800; padding: 4px 14px; background: var(--bg2); border-radius: 8px; font-size: .92rem; color: var(--gold); }
+  label { display: block; font-size: .85rem; font-weight: 700; margin: 14px 0 6px; color: var(--muted); }
+  label .req { color: var(--red); font-size: .75rem; margin-left: 6px; }
+  input[type=text], textarea {
+    width: 100%; background: var(--bg2); color: var(--text);
+    border: 2px solid #443c5e; border-radius: 10px; padding: 10px 12px;
+    font-size: .95rem; font-family: inherit; resize: vertical;
+  }
+  input[type=text]:focus, textarea:focus { outline: none; border-color: var(--gold); }
+  textarea { min-height: 90px; }
+  textarea.tall { min-height: 160px; }
+  .episode-block { border: 2px dashed #443c5e; border-radius: 12px; padding: 4px 16px 16px; margin-top: 12px; }
+  .episode-block h4 { margin-top: 12px; font-size: .9rem; color: var(--gold); }
+  .check-row { display: flex; align-items: center; gap: 10px; margin-top: 14px; }
+  .check-row input { width: 18px; height: 18px; accent-color: var(--red); }
+  .check-row span { font-size: .9rem; font-weight: 700; }
+  .grad-caution {
+    background: rgba(46,123,255,.12); border: 1px solid var(--blue);
+    border-radius: 12px; padding: 12px 16px; font-size: .82rem; line-height: 1.7; color: #bcd3ff; margin-bottom: 18px;
+  }
+  .generate-btn {
+    display: block; width: 100%; padding: 18px; margin-top: 8px;
+    border: none; border-radius: 16px; font-size: 1.15rem; font-weight: 900; letter-spacing: .05em;
+    color: #fff; cursor: pointer; font-family: inherit;
+    box-shadow: 0 6px 0 rgba(0,0,0,.35); transition: transform .1s;
+  }
+  .generate-btn:hover { transform: translateY(-2px); }
+  .generate-btn:active { transform: translateY(3px); box-shadow: 0 2px 0 rgba(0,0,0,.35); }
+  .generate-btn.shukatsu { background: linear-gradient(160deg, var(--red), var(--red-dark)); }
+  .generate-btn.grad { background: linear-gradient(160deg, var(--blue), var(--blue-dark)); }
+  .generate-btn:disabled { opacity: .5; cursor: wait; transform: none; }
+
+  /* ── 結果 ── */
+  .notice {
+    border-radius: 12px; padding: 14px 18px; font-size: .88rem; font-weight: 700;
+    margin-bottom: 26px; line-height: 1.7;
+  }
+  .notice.grad { background: rgba(46,123,255,.14); border: 1px solid var(--blue); color: #bcd3ff; }
+  .notice.shukatsu { background: rgba(255,77,46,.12); border: 1px solid var(--red); color: #ffc6b8; }
+  .cat-header { font-size: 1.15rem; font-weight: 900; margin: 34px 0 14px; display: flex; align-items: center; gap: 10px; }
+  .cat-header::before { content: ""; width: 8px; height: 24px; border-radius: 4px; background: var(--gold); display: inline-block; }
+  .q-card { background: var(--card); border-radius: 16px; padding: 20px 22px; margin-bottom: 16px; }
+  .q-text { font-size: 1.05rem; font-weight: 800; line-height: 1.7; }
+  .q-intent { margin-top: 10px; font-size: .82rem; color: var(--muted); line-height: 1.6; }
+  .q-intent b { color: var(--gold); }
+  .q-meta { margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .badge { font-size: .72rem; font-weight: 800; padding: 3px 10px; border-radius: 999px; }
+  .badge.testimonial { background: rgba(77,212,122,.18); color: var(--green); border: 1px solid var(--green); }
+  .badge.inference { background: rgba(255,207,77,.15); color: var(--gold); border: 1px solid var(--gold); }
+  .badge.general { background: rgba(168,159,192,.15); color: var(--muted); border: 1px solid var(--muted); }
+  .src-link { font-size: .78rem; color: #9dbcff; word-break: break-all; }
+  .answer-area { margin-top: 16px; }
+  .answer-area textarea { min-height: 110px; }
+  .fb-btn {
+    margin-top: 10px; padding: 10px 20px; border: none; border-radius: 10px;
+    background: var(--gold); color: #201a00; font-weight: 900; cursor: pointer; font-family: inherit; font-size: .9rem;
+    box-shadow: 0 4px 0 #a8842a;
+  }
+  .fb-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #a8842a; }
+  .fb-btn:disabled { opacity: .5; cursor: wait; }
+  .fb-result { margin-top: 14px; background: var(--bg2); border-radius: 12px; padding: 16px 18px; font-size: .88rem; line-height: 1.8; display: none; }
+  .fb-result.show { display: block; }
+  .fb-result h5 { font-size: .8rem; margin: 10px 0 2px; }
+  .fb-result h5:first-child { margin-top: 0; }
+  .fb-good h5 { color: var(--green); } .fb-weak h5 { color: var(--red); }
+  .fb-follow h5 { color: var(--gold); } .fb-imp h5 { color: #9dbcff; }
+  .fb-result ul { padding-left: 20px; }
+  .error-box { background: rgba(255,77,46,.15); border: 1px solid var(--red); color: #ffc6b8; padding: 14px 18px; border-radius: 12px; margin-top: 16px; font-size: .88rem; display: none; }
+
+  /* ── ローディング ── */
+  #loading {
+    position: fixed; inset: 0; background: rgba(15,12,22,.88); z-index: 50;
+    display: none; flex-direction: column; align-items: center; justify-content: center; gap: 22px; text-align: center;
+  }
+  #loading.show { display: flex; }
+  .drum { font-size: 4rem; animation: bounce 0.9s ease-in-out infinite; }
+  @keyframes bounce { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-18px) } }
+  #loading-msg { font-weight: 800; font-size: 1.05rem; }
+  #loading-sub { color: var(--muted); font-size: .85rem; }
+
+  @media (max-width: 760px) {
+    .panels { flex-direction: column; align-items: center; }
+    .top-title { font-size: 1.7rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══ トップ:モード選択 ═══ -->
+<div class="screen active" id="screen-top">
+  <div class="top-title">面接ジム <span class="accent">—</span> 想定問答トレーナー</div>
+  <div class="top-sub">深掘り耐性と言語化スピードを鍛える練習場。的中させるツールではありません。</div>
+  <div class="panels">
+    <div class="panel panel-shukatsu" tabindex="0" onclick="selectMode('shukatsu')">
+      <div class="p-icon">🏢</div>
+      <h2>就活モード</h2>
+      <div class="p-copy">実際の面接体験談を根拠に、<br>企業別の深掘りに耐える</div>
+      <div class="p-note">ONE CAREER・unistyle等の体験談をAIが検索して踏まえます</div>
+    </div>
+    <div class="panel panel-grad" tabindex="0" onclick="selectMode('grad')">
+      <div class="p-icon">🎓</div>
+      <h2>大学院受験モード</h2>
+      <div class="p-copy">情報が少ない領域だからこそ、<br>推論の質で勝負する</div>
+      <div class="p-note">体験談データが少ないため、専攻・研究科の傾向からの推論ベースです。的中を保証するものではありません</div>
+    </div>
+  </div>
+  <div class="concept-note">
+    AIが生成する質問は「実際にその面接官が聞く質問」ではなく、<br>
+    「聞かれてもおかしくない、あなたの答案の甘さを突く質問」です。
+  </div>
+</div>
+
+<!-- ═══ 入力フォーム ═══ -->
+<div class="screen" id="screen-form">
+  <div class="form-head">
+    <span class="mode-chip" id="form-chip"></span>
+    <h1 class="form-title" id="form-title"></h1>
+    <button class="back-btn" onclick="showScreen('screen-top')">← モード選択へ</button>
+  </div>
+
+  <div class="grad-caution" id="grad-caution" style="display:none">
+    ⚠ 大学院モードは体験談データが少ないため、アドミッションポリシーと研究計画の整合性チェックを軸にした<b>推論ベース</b>で質問を作ります。的中を保証するものではなく、答案の弱点を洗い出す練習台としてお使いください。
+  </div>
+
+  <fieldset>
+    <legend>基本情報</legend>
+    <label>氏名(任意・表示のみで保存されません)</label>
+    <input type="text" id="f-name" placeholder="例:阿蘭 太郎">
+    <label>志望先名(大学院名/企業名)<span class="req">必須</span></label>
+    <input type="text" id="f-target" placeholder="例:〇〇大学大学院 / 株式会社〇〇">
+    <label>志望専攻・職種<span class="req">必須</span></label>
+    <input type="text" id="f-position" placeholder="例:情報学専攻 / ゲームプランナー・サウンド">
+    <label>ES本文 or 志望理由書本文</label>
+    <textarea class="tall" id="f-es" placeholder="志望理由を、飾らずに書いてください(後でAIが甘さを突きます)"></textarea>
+    <label>自己PR軸</label>
+    <input type="text" id="f-axis" placeholder="例:課題に対して妥協せず、必要な技術を自ら吸収して解決する研鑽力">
+    <label>併願状況・スケジュール(任意)</label>
+    <input type="text" id="f-schedule" placeholder="例:第一志望。他に〇〇を併願">
+  </fieldset>
+
+  <fieldset>
+    <legend>主要エピソード(3本想定・1本でも可)</legend>
+    <div class="episode-block" id="ep-1">
+      <h4>エピソード 1</h4>
+      <label>タイトル</label>
+      <input type="text" class="ep-title" placeholder="あなたが一番語れる経験を教えてください">
+      <label>概要(200字程度)</label>
+      <textarea class="ep-summary"></textarea>
+      <label>このエピソードで見せたい強み</label>
+      <input type="text" class="ep-strength" placeholder="このエピソードで、面接官に何を持ち帰ってほしいですか?">
+    </div>
+    <div class="episode-block" id="ep-2">
+      <h4>エピソード 2</h4>
+      <label>タイトル</label>
+      <input type="text" class="ep-title">
+      <label>概要(200字程度)</label>
+      <textarea class="ep-summary"></textarea>
+      <label>このエピソードで見せたい強み</label>
+      <input type="text" class="ep-strength">
+    </div>
+    <div class="episode-block" id="ep-3">
+      <h4>エピソード 3</h4>
+      <label>タイトル</label>
+      <input type="text" class="ep-title">
+      <label>概要(200字程度)</label>
+      <textarea class="ep-summary"></textarea>
+      <label>このエピソードで見せたい強み</label>
+      <input type="text" class="ep-strength">
+    </div>
+  </fieldset>
+
+  <!-- 大学院固有 -->
+  <fieldset id="grad-fields" style="display:none">
+    <legend>大学院受験の追加情報</legend>
+    <label>研究テーマ(卒論など)</label>
+    <input type="text" id="f-researchTheme">
+    <label>志望する研究室・指導教員(分かれば)</label>
+    <input type="text" id="f-lab">
+    <label>研究科の特色・アドミッションポリシーの要点(貼り付け推奨。入れるほど質問の精度が上がります)</label>
+    <textarea id="f-admissionPolicy"></textarea>
+    <label>研究計画書本文(あれば)</label>
+    <textarea class="tall" id="f-researchPlan"></textarea>
+  </fieldset>
+
+  <!-- 就活固有 -->
+  <fieldset id="shukatsu-fields" style="display:none">
+    <legend>就活の追加情報</legend>
+    <label>募集要項の要点(貼り付け。なければAIが検索します)</label>
+    <textarea id="f-jobDetail"></textarea>
+    <label>逆質問で聞きたいこと(任意)</label>
+    <textarea id="f-reverseQuestions"></textarea>
+    <div class="check-row">
+      <input type="checkbox" id="f-pressureMode">
+      <span>圧迫・意地悪系の切り返し練習も入れる</span>
+    </div>
+  </fieldset>
+
+  <div class="error-box" id="form-error"></div>
+  <button class="generate-btn" id="generate-btn" onclick="generate()"></button>
+</div>
+
+<!-- ═══ 結果 ═══ -->
+<div class="screen" id="screen-result">
+  <div class="form-head">
+    <span class="mode-chip" id="result-chip"></span>
+    <h1 class="form-title">想定問答トレーニング</h1>
+    <button class="back-btn" onclick="showScreen('screen-form')">← 入力に戻る</button>
+  </div>
+  <div class="notice" id="result-notice"></div>
+  <div id="result-list"></div>
+</div>
+
+<!-- ═══ ローディング ═══ -->
+<div id="loading">
+  <div class="drum">🥁</div>
+  <div id="loading-msg"></div>
+  <div id="loading-sub"></div>
+</div>
+
+<script>
+let mode = null;          // 'shukatsu' | 'grad'
+let lastProfile = null;
+let questions = [];
+
+const MODE_LABEL = { shukatsu: '就活モード', grad: '大学院受験モード' };
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function selectMode(m) {
+  mode = m;
+  const chip = document.getElementById('form-chip');
+  chip.textContent = MODE_LABEL[m];
+  chip.className = 'mode-chip ' + m;
+  document.getElementById('form-title').textContent = m === 'grad' ? '一次情報を入力' : '一次情報を入力';
+  document.getElementById('grad-fields').style.display = m === 'grad' ? '' : 'none';
+  document.getElementById('grad-caution').style.display = m === 'grad' ? '' : 'none';
+  document.getElementById('shukatsu-fields').style.display = m === 'shukatsu' ? '' : 'none';
+  const btn = document.getElementById('generate-btn');
+  btn.className = 'generate-btn ' + m;
+  btn.textContent = m === 'grad' ? '🎯 想定問答を組み立てる' : '🔎 体験談を検索して想定問答を作る';
+  showScreen('screen-form');
+}
+
+function v(id) { return document.getElementById(id).value.trim(); }
+
+function collectProfile() {
+  const episodes = [1, 2, 3].map(i => {
+    const b = document.getElementById('ep-' + i);
+    return {
+      title: b.querySelector('.ep-title').value.trim(),
+      summary: b.querySelector('.ep-summary').value.trim(),
+      strength: b.querySelector('.ep-strength').value.trim(),
+    };
+  }).filter(e => e.title || e.summary);
+  const p = {
+    name: v('f-name'), target: v('f-target'), position: v('f-position'),
+    es: v('f-es'), axis: v('f-axis'), schedule: v('f-schedule'), episodes,
+  };
+  if (mode === 'grad') {
+    p.researchTheme = v('f-researchTheme');
+    p.lab = v('f-lab');
+    p.admissionPolicy = v('f-admissionPolicy');
+    p.researchPlan = v('f-researchPlan');
+  } else {
+    p.jobDetail = v('f-jobDetail');
+    p.reverseQuestions = v('f-reverseQuestions');
+    p.pressureMode = document.getElementById('f-pressureMode').checked;
+  }
+  return p;
+}
+
+function setLoading(on, msg, sub) {
+  const el = document.getElementById('loading');
+  el.classList.toggle('show', on);
+  if (msg) document.getElementById('loading-msg').textContent = msg;
+  if (sub !== undefined) document.getElementById('loading-sub').textContent = sub;
+}
+
+async function generate() {
+  const err = document.getElementById('form-error');
+  err.style.display = 'none';
+  const p = collectProfile();
+  if (!p.target || !p.position) {
+    err.textContent = '志望先名と志望専攻・職種は必須です。';
+    err.style.display = 'block';
+    return;
+  }
+  lastProfile = p;
+  const btn = document.getElementById('generate-btn');
+  btn.disabled = true;
+  setLoading(true,
+    mode === 'grad' ? '想定問答を組み立てています…' : '体験談を検索して想定問答を作っています…',
+    mode === 'grad' ? 'アドミッションポリシーと答案の整合性をチェック中(1〜2分かかることがあります)'
+                    : 'ONE CAREER・unistyle等を検索中(2〜3分かかることがあります)');
+  try {
+    const res = await fetch('/api/generate/' + mode, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(p),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'サーバーエラー');
+    questions = data.questions || [];
+    renderResult();
+    showScreen('screen-result');
+  } catch (e) {
+    err.textContent = 'エラー: ' + e.message;
+    err.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    setLoading(false);
+  }
+}
+
+function esc(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+const BADGE = {
+  testimonial: { cls: 'testimonial', label: '体験談あり' },
+  inference:   { cls: 'inference',   label: '公開情報からの推論' },
+  general:     { cls: 'general',     label: '一般的な想定' },
+};
+
+function renderResult() {
+  const chip = document.getElementById('result-chip');
+  chip.textContent = MODE_LABEL[mode];
+  chip.className = 'mode-chip ' + mode;
+
+  const notice = document.getElementById('result-notice');
+  if (mode === 'grad') {
+    notice.className = 'notice grad';
+    notice.textContent = 'これは的中予想ではなく、答案の弱点を洗い出す練習です。推論ベースの質問なので、うまく答えられない箇所こそ収穫だと思って向き合ってください。';
+  } else {
+    notice.className = 'notice shukatsu';
+    notice.textContent = '実際の体験談が見つかった質問には出典を表示します。「一般的な想定」の質問は体験談が見つからなかったもので、募集要項ベース・定番ベースの練習用です。';
+  }
+
+  // カテゴリごとにグループ化(出現順を維持)
+  const groups = [];
+  const byCat = {};
+  questions.forEach((q, i) => {
+    const cat = q.category || 'その他';
+    if (!byCat[cat]) { byCat[cat] = []; groups.push(cat); }
+    byCat[cat].push({ ...q, idx: i });
+  });
+
+  const list = document.getElementById('result-list');
+  list.innerHTML = groups.map(cat => `
+    <div class="cat-header">${esc(cat)}</div>
+    ${byCat[cat].map(q => {
+      const b = BADGE[q.basis] || BADGE.general;
+      const src = q.source && q.source.url
+        ? `<a class="src-link" href="${esc(q.source.url)}" target="_blank" rel="noopener">📄 ${esc(q.source.title || q.source.url)}</a>` : '';
+      return `
+      <div class="q-card" id="qcard-${q.idx}">
+        <div class="q-text">Q. ${esc(q.question)}</div>
+        <div class="q-intent"><b>この質問の狙い:</b> ${esc(q.intent || '')}</div>
+        <div class="q-meta"><span class="badge ${b.cls}">${b.label}</span>${src}</div>
+        <div class="answer-area">
+          <label>回答を書いてみる(声に出して話した内容をそのまま書くのがおすすめ)</label>
+          <textarea id="ans-${q.idx}"></textarea>
+          <button class="fb-btn" id="fbbtn-${q.idx}" onclick="getFeedback(${q.idx})">💬 AIにフィードバックをもらう</button>
+          <div class="fb-result" id="fb-${q.idx}"></div>
+        </div>
+      </div>`;
+    }).join('')}
+  `).join('');
+}
+
+async function getFeedback(idx) {
+  const answer = document.getElementById('ans-' + idx).value.trim();
+  const box = document.getElementById('fb-' + idx);
+  const btn = document.getElementById('fbbtn-' + idx);
+  if (!answer) {
+    box.className = 'fb-result show';
+    box.innerHTML = 'まず回答を書いてから押してください。';
+    return;
+  }
+  btn.disabled = true;
+  btn.textContent = '添削中…';
+  try {
+    const res = await fetch('/api/feedback', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mode, question: questions[idx], answer, profile: lastProfile }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'サーバーエラー');
+    box.className = 'fb-result show';
+    box.innerHTML = `
+      <div class="fb-good"><h5>✅ 良い点</h5>${esc(data.good)}</div>
+      <div class="fb-weak"><h5>⚠ 弱い点</h5>${esc(data.weak)}</div>
+      <div class="fb-follow"><h5>🔥 次に飛んでくる深掘り</h5><ul>${(data.followups || []).map(f => `<li>${esc(f)}</li>`).join('')}</ul></div>
+      <div class="fb-imp"><h5>🛠 改善の方向性</h5>${esc(data.improvement)}</div>`;
+  } catch (e) {
+    box.className = 'fb-result show';
+    box.innerHTML = 'エラー: ' + esc(e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '💬 AIにフィードバックをもらう';
+  }
+}
+</script>
+</body>
+</html>
