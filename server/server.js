@@ -17,6 +17,8 @@ app.get('/', (_req, res) => {
   res.sendFile(path.resolve(__dirname, '..', '面接想定問答ジム.html'));
 });
 
+app.use('/assets', express.static(path.resolve(__dirname, '..', 'assets')));
+
 app.get('/api/health', (_req, res) => res.json({ ok: true }));
 
 // pause_turn(サーバーツールの反復上限)を再送で継続しつつ最終メッセージを得る

@@ -154,6 +154,19 @@
   #loading-msg { font-weight: 800; font-size: 1.05rem; }
   #loading-sub { color: var(--muted); font-size: .85rem; }
 
+  /* ── BGM ── */
+  #bgm-btn {
+    position: fixed; top: 14px; right: 14px; z-index: 60;
+    background: var(--card); color: var(--text);
+    border: 2px solid #443c5e; border-radius: 999px;
+    padding: 8px 16px; font-size: .85rem; font-weight: 800;
+    cursor: pointer; font-family: inherit;
+  }
+  #bgm-btn:hover { border-color: var(--gold); }
+  #bgm-btn.off { color: var(--muted); }
+  .bgm-credit { margin-top: 30px; color: var(--muted); font-size: .72rem; line-height: 1.7; }
+  .bgm-credit a { color: #9dbcff; }
+
   @media (max-width: 760px) {
     .panels { flex-direction: column; align-items: center; }
     .top-title { font-size: 1.7rem; }
@@ -170,19 +183,24 @@
     <div class="panel panel-shukatsu" tabindex="0" onclick="selectMode('shukatsu')">
       <div class="p-icon">🏢</div>
       <h2>就活モード</h2>
-      <div class="p-copy">実際の面接体験談を根拠に、<br>企業別の深掘りに耐える</div>
-      <div class="p-note">ONE CAREER・unistyle等の体験談をAIが検索して踏まえます</div>
+      <div class="p-copy">就活の面接対策に使ってね♪<br>深掘り質問、こわくないよ</div>
+      <div class="p-note">ONE CAREERとかの体験談をAIが探して踏まえるよ<br>※集団面接(グループ面接)には対応していません</div>
     </div>
     <div class="panel panel-grad" tabindex="0" onclick="selectMode('grad')">
       <div class="p-icon">🎓</div>
       <h2>大学院受験モード</h2>
-      <div class="p-copy">情報が少ない領域だからこそ、<br>推論の質で勝負する</div>
-      <div class="p-note">体験談データが少ないため、専攻・研究科の傾向からの推論ベースです。的中を保証するものではありません</div>
+      <div class="p-copy">絶対大学院に合格してほしいから、<br>マジで応援してる。</div>
+      <div class="p-note">体験談が少ない領域だから推論ベース。的中保証はないけど、答案の弱点洗い出しには効くよ<br>※集団面接(グループ面接)には対応していません</div>
     </div>
   </div>
   <div class="concept-note">
     AIが生成する質問は「実際にその面接官が聞く質問」ではなく、<br>
     「聞かれてもおかしくない、あなたの答案の甘さを突く質問」です。
+  </div>
+  <div class="bgm-credit">
+    ♪ BGM 曲名『On The Way』<br>
+    作曲 RYU ITO <a href="https://ryu110.com/" target="_blank" rel="noopener">https://ryu110.com/</a><br>
+    フリーBGM公開中!
   </div>
 </div>
 
@@ -286,6 +304,10 @@
   <div id="result-list"></div>
 </div>
 
+<!-- ═══ BGM ═══ -->
+<audio id="bgm" src="/assets/bgm.mp3" loop preload="auto"></audio>
+<button id="bgm-btn" onclick="toggleBgm()">♪ BGM ON</button>
+
 <!-- ═══ ローディング ═══ -->
 <div id="loading">
   <div class="drum">🥁</div>
@@ -297,6 +319,30 @@
 let mode = null;          // 'shukatsu' | 'grad'
 let lastProfile = null;
 let questions = [];
+
+// ── BGM(ループ再生) ──
+// ブラウザの自動再生制限があるため、最初のクリック等の操作をきっかけに再生を開始する
+const bgm = document.getElementById('bgm');
+bgm.volume = 0.35;
+let bgmWanted = true;
+
+function updateBgmBtn() {
+  const btn = document.getElementById('bgm-btn');
+  btn.textContent = bgmWanted ? '♪ BGM ON' : '♪ BGM OFF';
+  btn.classList.toggle('off', !bgmWanted);
+}
+
+function toggleBgm() {
+  bgmWanted = !bgmWanted;
+  if (bgmWanted) { bgm.play().catch(() => {}); } else { bgm.pause(); }
+  updateBgmBtn();
+}
+
+document.addEventListener('pointerdown', function startBgmOnce() {
+  if (bgmWanted && bgm.paused) bgm.play().catch(() => {});
+  document.removeEventListener('pointerdown', startBgmOnce);
+}, { once: false });
+updateBgmBtn();
 
 const MODE_LABEL = { shukatsu: '就活モード', grad: '大学院受験モード' };
 
