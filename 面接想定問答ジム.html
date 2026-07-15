@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>面接ジム — 想定問答トレーナー</title>
+<title>面接対策ツール</title>
 <style>
   :root {
     --red: #ff4d2e;
@@ -164,8 +164,41 @@
   }
   #bgm-btn:hover { border-color: var(--gold); }
   #bgm-btn.off { color: var(--muted); }
-  .bgm-credit { margin-top: 30px; color: var(--muted); font-size: .72rem; line-height: 1.7; }
-  .bgm-credit a { color: #9dbcff; }
+  .panel .p-caution {
+    font-size: .74rem; font-weight: 800; line-height: 1.5;
+    background: rgba(0,0,0,.3); border-radius: 8px; padding: 6px 10px;
+    color: #ffe9a8;
+  }
+
+  /* ── クレジット ── */
+  .credit-open {
+    margin-top: 34px; background: none; border: 2px solid var(--muted); color: var(--muted);
+    border-radius: 999px; padding: 8px 22px; cursor: pointer; font-size: .82rem; font-weight: 700; font-family: inherit;
+  }
+  .credit-open:hover { border-color: var(--gold); color: var(--gold); }
+  #credits-overlay {
+    position: fixed; inset: 0; background: rgba(15,12,22,.9); z-index: 60;
+    display: none; align-items: center; justify-content: center; padding: 20px;
+  }
+  #credits-overlay.show { display: flex; }
+  .credits-box {
+    background: var(--card); border-radius: 20px; padding: 30px 36px; max-width: 420px; width: 100%;
+    text-align: center; border: 3px solid rgba(255,255,255,.15);
+  }
+  .credits-box h3 { color: var(--gold); letter-spacing: .3em; margin-bottom: 18px; }
+  .credits-box dl {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px 18px; font-size: .92rem; margin-bottom: 20px;
+  }
+  .credits-box dt { text-align: right; color: var(--muted); font-weight: 700; }
+  .credits-box dd { text-align: left; font-weight: 800; }
+  .credits-bgm {
+    font-size: .74rem; color: var(--muted); line-height: 1.8; border-top: 1px solid #443c5e; padding-top: 14px;
+  }
+  .credits-bgm a { color: #9dbcff; }
+  .credits-close {
+    margin-top: 18px; background: var(--gold); color: #201a00; border: none; border-radius: 10px;
+    padding: 9px 26px; font-weight: 900; cursor: pointer; font-family: inherit; font-size: .88rem;
+  }
 
   @media (max-width: 760px) {
     .panels { flex-direction: column; align-items: center; }
@@ -177,30 +210,49 @@
 
 <!-- ═══ トップ:モード選択 ═══ -->
 <div class="screen active" id="screen-top">
-  <div class="top-title">面接ジム <span class="accent">—</span> 想定問答トレーナー</div>
+  <div class="top-title">面接対策ツール</div>
   <div class="top-sub">深掘り耐性と言語化スピードを鍛える練習場。的中させるツールではありません。</div>
   <div class="panels">
     <div class="panel panel-shukatsu" tabindex="0" onclick="selectMode('shukatsu')">
       <div class="p-icon">🏢</div>
       <h2>就活モード</h2>
-      <div class="p-copy">就活の面接対策に使ってね♪<br>深掘り質問、こわくないよ</div>
-      <div class="p-note">ONE CAREERとかの体験談をAIが探して踏まえるよ<br>※集団面接(グループ面接)には対応していません</div>
+      <div class="p-copy">就活の面接対策に使ってね♪</div>
+      <div class="p-caution">※集団面接(グループ面接)には対応していません</div>
+      <div class="p-note">ONE CAREERとかの体験談をAIが探して踏まえるよ</div>
     </div>
     <div class="panel panel-grad" tabindex="0" onclick="selectMode('grad')">
       <div class="p-icon">🎓</div>
       <h2>大学院受験モード</h2>
       <div class="p-copy">絶対大学院に合格してほしいから、<br>マジで応援してる。</div>
-      <div class="p-note">体験談が少ない領域だから推論ベース。的中保証はないけど、答案の弱点洗い出しには効くよ<br>※集団面接(グループ面接)には対応していません</div>
+      <div class="p-caution">※集団面接(グループ面接)には対応していません</div>
+      <div class="p-note">体験談が少ない領域だから推論ベース。的中保証はないけど、答案の弱点洗い出しには効くよ</div>
     </div>
   </div>
   <div class="concept-note">
     AIが生成する質問は「実際にその面接官が聞く質問」ではなく、<br>
     「聞かれてもおかしくない、あなたの答案の甘さを突く質問」です。
   </div>
-  <div class="bgm-credit">
-    ♪ BGM 曲名『On The Way』<br>
-    作曲 RYU ITO <a href="https://ryu110.com/" target="_blank" rel="noopener">https://ryu110.com/</a><br>
-    フリーBGM公開中!
+  <button class="credit-open" onclick="toggleCredits(true)">クレジット</button>
+</div>
+
+<!-- ═══ クレジット ═══ -->
+<div id="credits-overlay" onclick="if(event.target===this)toggleCredits(false)">
+  <div class="credits-box">
+    <h3>クレジット</h3>
+    <dl>
+      <dt>企画</dt><dd>岩田</dd>
+      <dt>制作</dt><dd>岩田</dd>
+      <dt>デザイン</dt><dd>岩田</dd>
+      <dt>プログラム</dt><dd>岩田</dd>
+      <dt>テスト</dt><dd>岩田</dd>
+      <dt>スペシャルサンクス</dt><dd>岩田</dd>
+    </dl>
+    <div class="credits-bgm">
+      曲名『On The Way』<br>
+      作曲 RYU ITO <a href="https://ryu110.com/" target="_blank" rel="noopener">https://ryu110.com/</a><br>
+      フリーBGM公開中!
+    </div>
+    <button class="credits-close" onclick="toggleCredits(false)">とじる</button>
   </div>
 </div>
 
@@ -343,6 +395,21 @@ document.addEventListener('pointerdown', function startBgmOnce() {
   document.removeEventListener('pointerdown', startBgmOnce);
 }, { once: false });
 updateBgmBtn();
+
+// ── クリック効果音 ──
+const clickSe = new Audio('/assets/click.mp3');
+clickSe.volume = 0.5;
+document.addEventListener('click', (e) => {
+  if (e.target.closest('button, .panel')) {
+    clickSe.currentTime = 0;
+    clickSe.play().catch(() => {});
+  }
+});
+
+// ── クレジット ──
+function toggleCredits(show) {
+  document.getElementById('credits-overlay').classList.toggle('show', show);
+}
 
 const MODE_LABEL = { shukatsu: '就活モード', grad: '大学院受験モード' };
 

@@ -238,7 +238,7 @@ ${answer}
 });
 
 app.listen(PORT, () => {
-  console.log(`✓ 面接ジム サーバー起動: http://localhost:${PORT}`);
+  console.log(`✓ 面接対策ツール サーバー起動: http://localhost:${PORT}`);
   if (!process.env.ANTHROPIC_API_KEY) {
     console.warn('⚠ ANTHROPIC_API_KEY が未設定です。server/.env を確認してください。');
   }
